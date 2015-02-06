@@ -1,11 +1,16 @@
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Timer;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -17,22 +22,48 @@ import java.util.logging.Logger;
  * @author Usuario
  */
 public class ChatClient extends javax.swing.JFrame {
-    
+
     Chat service;
+    final Timer timer = new Timer(500, null);
+    ActionListener listener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                TxtChat.setText(service.getMessages());
+            } catch (RemoteException ex) {
+                Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    };
 
     /**
      * Creates new form ChatClient
      */
     private void initClient() {
-        
-        System.out.println("Looking for light service");
+
+        System.out.println("Looking for chat service");
         try {
             String registry = "localhost";
-            
-            String registration = "rmi://" + registry + "/Chat";
+            String rName = "";
+            //test
+            final Registry re = LocateRegistry.getRegistry(registry);
+            final String[] boundNames = re.list();
+
+            for (final String name : boundNames) {
+                if (name.contains("Chat")) {
+                    rName = name;
+                    break;
+                }
+                System.out.println(name);
+            }
+
+            String registration = "rmi://" + registry + "/" + rName;
             Remote remoteService = Naming.lookup(registration);
             service = (Chat) remoteService;
-            
+
+            timer.addActionListener(listener);
+            timer.start();
+
         } catch (NotBoundException nbe) {
             System.out.println("No Light service available in registry!");
         } catch (RemoteException re) {
@@ -47,6 +78,7 @@ public class ChatClient extends javax.swing.JFrame {
         initClient();
         try {
             TxtChat.setText(service.getMessages());
+
         } catch (RemoteException ex) {
             Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -144,7 +176,7 @@ public class ChatClient extends javax.swing.JFrame {
             TxtChat.setText(service.getMessages());
             TxtMessage.setText("");
         } catch (RemoteException ex) {
-            
+
             TxtChat.setText("");
             initClient();
         }
@@ -182,7 +214,7 @@ public class ChatClient extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new ChatClient().setVisible(true);
-                
+
             }
         });
     }

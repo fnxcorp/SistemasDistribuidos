@@ -2,6 +2,8 @@
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.RemoteRef;
 
 /*
@@ -9,14 +11,17 @@ import java.rmi.server.RemoteRef;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author Usuario
  */
 public class ChatServer {
+
+    
+
     public static void main(String args[]) {
         System.out.println("Loading RMI Service");
+        int cont = 0;
         try {
             ChatImpl service = new ChatImpl();
             RemoteRef location = service.getRef();
@@ -25,7 +30,15 @@ public class ChatServer {
             if (args.length >= 1) {
                 registry = args[0];
             }
-            String registration = "rmi://" + registry + "/Chat";
+            final Registry re = LocateRegistry.getRegistry(registry);
+            final String[] boundNames = re.list();
+            for (final String name : boundNames) {
+                if (name.contains("Chat")) {
+                    cont++;
+                }
+
+            }
+            String registration = "rmi://" + registry + "/Chat"+cont;
             Naming.rebind(registration, service);
         } catch (RemoteException re) {
             System.err.println(
