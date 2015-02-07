@@ -3,19 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package chat;
 
 /**
  *
  * @author Usuario
  */
-public class Chat {
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-    }
+public interface Chat extends java.rmi.Remote{
+    
+    public void sendMessage(String user, String message) throws java.rmi.RemoteException;
+    public String getMessages() throws java.rmi.RemoteException;
     
 }
