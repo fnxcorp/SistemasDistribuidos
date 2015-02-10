@@ -8,6 +8,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Timer;
@@ -24,6 +25,9 @@ import javax.swing.Timer;
 public class ChatClient extends javax.swing.JFrame {
 
     Chat service;
+    String rName = "";
+    String registry = "localhost";
+   
     final Timer timer = new Timer(500, null);
     ActionListener listener = new ActionListener() {
         @Override
@@ -31,7 +35,16 @@ public class ChatClient extends javax.swing.JFrame {
             try {
                 TxtChat.setText(service.getMessages());
             } catch (RemoteException ex) {
-                Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex);
+                try {
+                    timer.removeActionListener(this);
+                    timer.stop();
+                    String registration = "rmi://" + registry + "/"+rName;
+                    Naming.unbind(registration);
+                    
+                    initClient();
+                } catch (RemoteException | NotBoundException | MalformedURLException ex1) {
+                    Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex1);
+                }
             }
         }
     };
@@ -43,17 +56,21 @@ public class ChatClient extends javax.swing.JFrame {
 
         System.out.println("Looking for chat service");
         try {
-            String registry = "localhost";
-            String rName = "";
+
             //test
             final Registry re = LocateRegistry.getRegistry(registry);
             final String[] boundNames = re.list();
 
             for (final String name : boundNames) {
-                if (name.contains("Chat")) {
+                if (name.contains("Chat") ) {
                     rName = name;
                     break;
                 }
+                System.out.println(name);
+            }
+            //remove
+            for (final String name : boundNames) {
+
                 System.out.println(name);
             }
 
@@ -65,7 +82,7 @@ public class ChatClient extends javax.swing.JFrame {
             timer.start();
 
         } catch (NotBoundException nbe) {
-            System.out.println("No Light service available in registry!");
+            System.out.println("No  service available in registry!");
         } catch (RemoteException re) {
             System.out.println("RMI Error - " + re);
         } catch (MalformedURLException e) {
@@ -178,6 +195,12 @@ public class ChatClient extends javax.swing.JFrame {
         } catch (RemoteException ex) {
 
             TxtChat.setText("");
+            String registration = "rmi://" + registry + "/"+rName;
+            try {
+                Naming.unbind(registration);
+            } catch (RemoteException | NotBoundException | MalformedURLException ex1) {
+                Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex1);
+            }
             initClient();
         }
     }//GEN-LAST:event_BtnSendActionPerformed
