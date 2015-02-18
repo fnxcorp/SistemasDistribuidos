@@ -55,7 +55,7 @@ public class ChatServer {
                 try {
                     remoteService = Naming.lookup(registration);
                     Chat tmp = (Chat) remoteService;
-                    service = new ChatImpl("Chat" + cont, tmp.getMessagesList());
+                    service = new ChatImpl("Chat" + cont, tmp.getMessagesList(),tmp.getUserList());
                 } catch (NotBoundException ex) {
                     Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
                 }
