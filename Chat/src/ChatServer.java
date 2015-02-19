@@ -6,20 +6,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.RemoteRef;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-/**
- *
- * @author Usuario
- */
 public class ChatServer {
 
     public static void main(String args[]) {
@@ -29,10 +18,14 @@ public class ChatServer {
 
             // System.out.println(location.remoteToString());
             String registry = "localhost";
+            int port = 1099;
             if (args.length >= 1) {
                 registry = args[0];
+                if (args.length >= 2) {
+                    port = Integer.parseInt(args[1]);
+                }
             }
-            final Registry re = LocateRegistry.getRegistry(registry);
+            final Registry re = LocateRegistry.getRegistry(registry, port);
             final String[] boundNames = re.list();
             boolean unique = true;
             int n = 0;
@@ -49,22 +42,22 @@ public class ChatServer {
             }
             ChatImpl service = null;
             if (!unique) {
-                String registration = "rmi://" + registry + "/Chat" + n;
+                String registration = "rmi://" + registry + ":" + port + "/Chat" + n;
                 Remote remoteService;
 
                 try {
                     remoteService = Naming.lookup(registration);
                     Chat tmp = (Chat) remoteService;
-                    service = new ChatImpl("Chat" + cont, tmp.getMessagesList(),tmp.getUserList());
+                    service = new ChatImpl("Chat" + cont, tmp.getMessagesList(), tmp.getUserList(), registry);
                 } catch (NotBoundException ex) {
                     Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
             } else {
-                service = new ChatImpl("Chat" + cont);
+                service = new ChatImpl("Chat" + cont, registry, port);
             }
             //RemoteRef location = service.getRef();
-            String registration = "rmi://" + registry + "/Chat" + cont;
+            String registration = "rmi://" + registry + ":" + port + "/Chat" + cont;
             Naming.rebind(registration, service);
         } catch (RemoteException re) {
             System.err.println(

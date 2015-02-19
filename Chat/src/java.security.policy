@@ -1,0 +1,3 @@
+grant codeBase "file:/C:/Users/aguilaom/Desktop/Chat/src" {
+    permission java.security.AllPermission;
+};

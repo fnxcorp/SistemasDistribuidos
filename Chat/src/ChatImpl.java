@@ -12,35 +12,29 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-/**
- *
- * @author Usuario
- */
 public class ChatImpl extends java.rmi.server.UnicastRemoteObject implements Chat {
 
     ArrayList<Message> messages;
     HashSet<String> users;
     private ArrayList<Chat> service;
     String serverId;
+    String registry = "localhost";
+    int port = 1099;
 
-    public ChatImpl(String serverId) throws java.rmi.RemoteException {
+    public ChatImpl(String serverId, String registry, int port) throws java.rmi.RemoteException {
         messages = new ArrayList<>();
         this.serverId = serverId;
         users = new HashSet<>();
-
+        this.registry = registry;
+        this.port = port;
         // System.out.println("new ref "+ this.getRef().toString()); 
     }
 
-    public ChatImpl(String serverId, ArrayList<Message> msgList, HashSet<String> users) throws java.rmi.RemoteException {
+    public ChatImpl(String serverId, ArrayList<Message> msgList, HashSet<String> users, String registry) throws java.rmi.RemoteException {
         messages = msgList;
         this.serverId = serverId;
         this.users = users;
-
+        this.registry = registry;
         // System.out.println("new ref "+ this.getRef().toString()); 
     }
 
@@ -48,15 +42,14 @@ public class ChatImpl extends java.rmi.server.UnicastRemoteObject implements Cha
         if (this.ref.remoteEquals(ref)) {
             System.out.println("Lo hice");
             //test
-            String registry = "localhost";
             final Registry re;
             try {
-                re = LocateRegistry.getRegistry(registry);
+                re = LocateRegistry.getRegistry(registry, port);
                 final String[] boundNames = re.list();
 
                 for (final String name : boundNames) {
                     if (name.contains("Chat")) {
-                        String registration = "rmi://" + registry + "/" + name;
+                        String registration = "rmi://" + registry + ":" + port + "/" + name;
                         if (!name.equals(this.serverId)) {
                             Remote remoteService = Naming.lookup(registration);
                             Chat tmp = (Chat) remoteService;
@@ -79,17 +72,17 @@ public class ChatImpl extends java.rmi.server.UnicastRemoteObject implements Cha
 
     private void replicateUser(String user, RemoteRef ref, boolean addRemove) {
         if (this.ref.remoteEquals(ref)) {
-            System.out.println("Lo hice");
+            System.out.println("mensaje");
             //test
-            String registry = "localhost";
+            //String registry = "localhost";
             final Registry re;
             try {
-                re = LocateRegistry.getRegistry(registry);
+                re = LocateRegistry.getRegistry(registry, port);
                 final String[] boundNames = re.list();
 
                 for (final String name : boundNames) {
                     if (name.contains("Chat")) {
-                        String registration = "rmi://" + registry + "/" + name;
+                        String registration = "rmi://" + registry + ":" + port + "/" + name;
                         if (!name.equals(this.serverId)) {
                             Remote remoteService = Naming.lookup(registration);
                             Chat tmp = (Chat) remoteService;

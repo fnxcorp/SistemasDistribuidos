@@ -1,0 +1,2 @@
+java -Djava.security.policy=java.security.policy ChatServer 192.168.0.103 8088
+java -Djava.security.policy=java.security.policy ChatClient 192.168.0.103 8088
