@@ -1,0 +1,3 @@
+grant codeBase "file:/C:/Users/aguilaom/Documents/personal/maestria/2do Semestre/Sistemas Distribuidos/Tareas/ChatDistribuido/src" {
+    permission java.security.AllPermission;
+};
