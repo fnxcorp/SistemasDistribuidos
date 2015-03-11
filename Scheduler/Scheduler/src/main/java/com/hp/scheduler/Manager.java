@@ -5,17 +5,45 @@
  */
 package com.hp.scheduler;
 
+import com.hp.scheduler.process.EventLogImpl;
+import com.hp.scheduler.process.RegistryManager;
+import com.hp.scheduler.socket.LogicalClock;
+import com.hp.scheduler.socket.LogicalClockImpl;
+import com.hp.scheduler.socket.SocketService;
+import com.hp.scheduler.socket.event.EventManager;
+import com.hp.scheduler.socket.event.EventType;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author orozco
  */
 public class Manager extends javax.swing.JFrame {
+    SocketService service=null;
+    EventManager eventManager=null;
+    String thisIP="";
+    LogicalClockImpl logialClock=new LogicalClockImpl();
+    RegistryManager registryManager=null;
+    EventLogImpl eventLog= null;
+    
 
     /**
      * Creates new form Manager
      */
     public Manager() {
         initComponents();
+        InetAddress iAddress;
+        try {
+            iAddress = InetAddress.getLocalHost();
+            thisIP = iAddress.getHostAddress();
+            TxtIP.setText(thisIP);
+            
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(Manager.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -34,7 +62,7 @@ public class Manager extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable2 = new javax.swing.JTable();
         jScrollPane3 = new javax.swing.JScrollPane();
-        TxtLog = new javax.swing.JTextField();
+        TxtLog = new javax.swing.JTextArea();
         BtnClient = new javax.swing.JButton();
         TxtIP = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
@@ -47,28 +75,39 @@ public class Manager extends javax.swing.JFrame {
         TxtPort.setText("8081");
 
         BtnConnect.setText("Connect");
+        BtnConnect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnConnectActionPerformed(evt);
+            }
+        });
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Client ID", "Status"
             }
         ));
         jScrollPane2.setViewportView(jTable2);
 
         jTabbedPane1.addTab("Connected Clients", jScrollPane2);
 
-        TxtLog.setEditable(false);
+        TxtLog.setColumns(20);
+        TxtLog.setRows(5);
         jScrollPane3.setViewportView(TxtLog);
 
         jTabbedPane1.addTab("Event Log", jScrollPane3);
 
         BtnClient.setText("Use as Client");
+        BtnClient.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnClientActionPerformed(evt);
+            }
+        });
 
         TxtIP.setEditable(false);
         TxtIP.setText("127.0.0.1");
@@ -124,6 +163,31 @@ public class Manager extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void BtnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnConnectActionPerformed
+        eventLog= new EventLogImpl(TxtLog);
+        
+        logialClock= new LogicalClockImpl();
+        
+        eventManager= new EventManager();
+        eventManager.addEventListener(eventLog);
+        
+        logialClock.tick();
+       
+        eventLog.logReceiveEvent("Manager", "Manager", logialClock.getValue(), EventType.INITIALIZE, "Manager Initialization", Integer.parseInt(TxtPort.getText()),"localhost");
+        
+        service= new SocketService("localhost", Integer.parseInt(TxtPort.getText()), eventManager);
+        service.start();
+        
+        registryManager= new RegistryManager(service);
+        eventManager.addEventListener(registryManager);
+        
+        BtnConnect.setEnabled(false);
+    }//GEN-LAST:event_BtnConnectActionPerformed
+
+    private void BtnClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnClientActionPerformed
+      
+    }//GEN-LAST:event_BtnClientActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -150,6 +214,9 @@ public class Manager extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(Manager.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        
+        
+  
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -163,7 +230,7 @@ public class Manager extends javax.swing.JFrame {
     private javax.swing.JButton BtnClient;
     private javax.swing.JButton BtnConnect;
     private javax.swing.JTextField TxtIP;
-    private javax.swing.JTextField TxtLog;
+    private javax.swing.JTextArea TxtLog;
     private javax.swing.JTextField TxtPort;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

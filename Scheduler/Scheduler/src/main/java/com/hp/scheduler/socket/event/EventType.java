@@ -11,5 +11,7 @@ public enum EventType {
    USE_LICENSE,
    RELEASE,
    ALLOWED,
-   UNKNOWN
+   UNKNOWN,
+   INITIALIZE,
+   REFUSE
 }

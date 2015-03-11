@@ -32,9 +32,9 @@ public class SocketService extends Thread {
         this.evtManager = evtManager;
     }
 
-    public void sendEvent(String srcProcess, int processLc, String destProcess,
+    public void sendEvent(String srcProcessID, int processLc, String destProcess,
             String destHostname, int destPort, EventType type, String meta) {
-        String message = String.format("%s|%s|%s|%s|%s", srcProcess, processLc, destProcess, type, meta);
+        String message = String.format("%s|%s|%s|%s|%s|%s|%s", srcProcessID, processLc, destProcess, type, meta, this.port,this.hostname);
         send(destHostname, destPort, message);
         evtManager.sendEvent(message);
         System.out.println("SEND>" + id);
@@ -58,8 +58,8 @@ public class SocketService extends Thread {
         }
     }
 
-    public void receiveEvent(String local, String from, int fromLc, EventType type, String meta) {
-        String message = String.format("%s|%s|%s|%s|%s", from, fromLc, local, type, meta);
+    public void receiveEvent(String local, String from, int fromLc, EventType type, String meta, String fromPort, String fromHostName) {
+        String message = String.format("%s|%s|%s|%s|%s|%s|%s", from, fromLc, local, type, meta, fromPort, fromHostName);
         //TODO add event receive processing
         evtManager.eventReceived(message);
         System.out.println("RECEIVE>" + id);
@@ -117,7 +117,7 @@ public class SocketService extends Thread {
                         datapacket = new DatagramPacket(buf, buf.length);
                         datasocket.receive(datapacket);
                         returnpacket = new DatagramPacket(datapacket.getData(), datapacket.getLength(), datapacket.getAddress(), datapacket.getPort());
-                        String event = (new String(returnpacket.getData(), "UTF-8"));
+                        String event = (new String(returnpacket.getData(),0,returnpacket.getLength(), "UTF-8"));
                         String[] parts = event.split("\\|");
                         String from = parts[0];
                         int lcFrom = Integer.parseInt(parts[1]);
@@ -128,8 +128,10 @@ public class SocketService extends Thread {
                         } catch (IllegalArgumentException iae) {
                             type = EventType.UNKNOWN;
                         }
-                        String meta = "";
-                        ssRef.receiveEvent(local, from, lcFrom, type, meta);
+                        String meta = parts[4];
+                        String fromPort=parts[5];
+                        String fromHost=parts[6];
+                        ssRef.receiveEvent(local, from, lcFrom, type, meta,fromPort, fromHost);
                     } catch (IOException e) {
                         if (keepGoing.get()) {
                             e.printStackTrace(System.err);
