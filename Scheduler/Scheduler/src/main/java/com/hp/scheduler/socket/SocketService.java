@@ -37,7 +37,7 @@ public class SocketService extends Thread {
         String message = String.format("%s|%s|%s|%s|%s|%s|%s", srcProcessID, processLc, destProcess, type, meta, this.port,this.hostname);
         send(destHostname, destPort, message);
         evtManager.sendEvent(message);
-        System.out.println("SEND>" + id);
+//        System.out.println("SEND>" + id);
     }
 
     private void send(String hostname, int toPort, String msg) {

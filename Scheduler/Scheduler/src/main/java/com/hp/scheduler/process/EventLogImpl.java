@@ -7,10 +7,7 @@ import com.hp.scheduler.socket.event.SocketEvent;
 import com.hp.scheduler.socket.event.SocketEventListener;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 /**
  *
