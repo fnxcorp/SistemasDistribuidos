@@ -1,5 +1,6 @@
 package com.hp.scheduler.process;
 
+import com.hp.scheduler.socket.LogicalClockImpl;
 import com.hp.scheduler.socket.SocketService;
 import com.hp.scheduler.socket.event.EventManager;
 import com.hp.scheduler.socket.event.EventType;
@@ -21,16 +22,18 @@ public class EventLogImpl implements SocketEventListener, EventLog {
     final SimpleDateFormat sdf;
     JTextArea logComponent = null;
     String log = null;
+    LogicalClockImpl lc = null;
 
     public EventLogImpl() {
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         this.log = "";
     }
 
-    public EventLogImpl(JTextArea logComponent) {
+    public EventLogImpl(JTextArea logComponent, LogicalClockImpl lc) {
         this.logComponent = logComponent;
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         this.log = "";
+        this.lc = lc;
     }
 
     @Override
@@ -61,6 +64,7 @@ public class EventLogImpl implements SocketEventListener, EventLog {
         int lcFrom = Integer.parseInt(parts[1]);
         String local = parts[2];
         EventType type;
+        lc.receiveAction(lcFrom);
         try {
             type = EventType.valueOf(parts[3]);
         } catch (IllegalArgumentException iae) {

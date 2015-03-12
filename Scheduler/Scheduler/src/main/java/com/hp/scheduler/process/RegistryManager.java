@@ -5,6 +5,7 @@
  */
 package com.hp.scheduler.process;
 
+import com.hp.scheduler.socket.LogicalClockImpl;
 import com.hp.scheduler.socket.SocketService;
 import com.hp.scheduler.socket.event.EventType;
 import com.hp.scheduler.socket.event.SocketEvent;
@@ -23,10 +24,12 @@ public class RegistryManager implements SocketEventListener {
      */
     private HashMap<String, Boolean> clientStatus = null;
     SocketService service = null;
+    LogicalClockImpl lc = null;
 
-    public RegistryManager(SocketService service) {
+    public RegistryManager(SocketService service, LogicalClockImpl lc) {
         this.clientStatus = new HashMap<>();
         this.service = service;
+        this.lc = lc;
     }
 
     @Override
@@ -47,10 +50,12 @@ public class RegistryManager implements SocketEventListener {
         if (type == EventType.CONNECT) {
             if (!clientStatus.containsKey(from)) {
                 clientStatus.put(from, true);
-                service.sendEvent("Manager", -1, from, fromHost, fromPort, EventType.ALLOWED, "Conection Allowed");
+                lc.tick();
+                service.sendEvent("Manager", lc.getValue(), from, fromHost, fromPort, EventType.ALLOWED, "Conection Allowed");
             } else {
                 //send message of refused
-                service.sendEvent("Manager", -1, from, fromHost, fromPort, EventType.REFUSE, "Conection Refused, Id already registered");
+                lc.tick();
+                service.sendEvent("Manager", lc.getValue(), from, fromHost, fromPort, EventType.REFUSE, "Conection Refused, Id already registered");
             }
         }
         //String meta = "";

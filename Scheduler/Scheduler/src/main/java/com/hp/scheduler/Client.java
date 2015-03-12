@@ -166,17 +166,18 @@ public class Client extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnConnectActionPerformed
-
-        eventLog = new EventLogImpl(Txtlog);
+        lc = new LogicalClockImpl();
+        eventLog = new EventLogImpl(Txtlog, lc);
         eventManager = new EventManager();
         eventManager.addEventListener(eventLog);
-        lc = new LogicalClockImpl();
         lc.tick();
-        eventLog.logReceiveEvent("Client1", "Client1", lc.getValue(), EventType.INITIALIZE, "Client Initialization", Integer.parseInt(TxtPortListener.getText()), "localhost");
+        eventLog.logReceiveEvent("Client1", "Client1", lc.getValue(), EventType.INITIALIZE, "Client Initialization", Integer.parseInt(TxtPortListener.getText()), TxtIP.getText());
 
         service = new SocketService("localhost", Integer.parseInt(TxtPortListener.getText()), eventManager);
         service.start();
+        lc.tick();
         service.sendEvent("Client1", lc.getValue(), "Manager", TxtIP.getText(), Integer.parseInt(TxtPort.getText()), EventType.CONNECT, "Requesting connection");
+        lc.tick();
         service.sendEvent("Client1", lc.getValue(), "Manager", TxtIP.getText(), Integer.parseInt(TxtPort.getText()), EventType.USE_LICENSE, "Testing new");
     }//GEN-LAST:event_BtnConnectActionPerformed
 
