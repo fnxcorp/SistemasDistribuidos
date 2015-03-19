@@ -108,7 +108,6 @@ public class Manager extends javax.swing.JFrame {
             }
         });
 
-        TxtIP.setEditable(false);
         TxtIP.setText("127.0.0.1");
 
         jLabel2.setText("Current Connection IP:");
@@ -172,7 +171,7 @@ public class Manager extends javax.swing.JFrame {
 
         eventLog.logReceiveEvent("Manager", "Manager", logicalClock.getValue(), EventType.INITIALIZE, "Manager Initialization", Integer.parseInt(TxtPort.getText()), "localhost");
 
-        service = new SocketService("localhost", Integer.parseInt(TxtPort.getText()), eventManager);
+        service = new SocketService(thisIP, Integer.parseInt(TxtPort.getText()), eventManager);
         service.start();
 
         registryManager = new RegistryManager(service, logicalClock);

@@ -171,14 +171,14 @@ public class Client extends javax.swing.JFrame {
         eventManager = new EventManager();
         eventManager.addEventListener(eventLog);
         lc.tick();
-        eventLog.logReceiveEvent("Client1", "Client1", lc.getValue(), EventType.INITIALIZE, "Client Initialization", Integer.parseInt(TxtPortListener.getText()), TxtIP.getText());
+        eventLog.logReceiveEvent("Client2", "Client2", lc.getValue(), EventType.INITIALIZE, "Client Initialization", Integer.parseInt(TxtPortListener.getText()), TxtIP.getText());
 
         service = new SocketService("localhost", Integer.parseInt(TxtPortListener.getText()), eventManager);
         service.start();
         lc.tick();
-        service.sendEvent("Client1", lc.getValue(), "Manager", TxtIP.getText(), Integer.parseInt(TxtPort.getText()), EventType.CONNECT, "Requesting connection");
+        service.sendEvent("Client2", lc.getValue(), "Manager", TxtIP.getText(), Integer.parseInt(TxtPort.getText()), EventType.CONNECT, "Requesting connection");
         lc.tick();
-        service.sendEvent("Client1", lc.getValue(), "Manager", TxtIP.getText(), Integer.parseInt(TxtPort.getText()), EventType.USE_LICENSE, "Testing new");
+        service.sendEvent("Client2", lc.getValue(), "Manager", TxtIP.getText(), Integer.parseInt(TxtPort.getText()), EventType.USE_LICENSE, "Testing new");
     }//GEN-LAST:event_BtnConnectActionPerformed
 
     /**
