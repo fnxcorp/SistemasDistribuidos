@@ -7,7 +7,6 @@ package com.hp.scheduler;
 
 import com.hp.scheduler.process.EventLogImpl;
 import com.hp.scheduler.process.RegistryManager;
-import com.hp.scheduler.socket.LogicalClock;
 import com.hp.scheduler.socket.LogicalClockImpl;
 import com.hp.scheduler.socket.SocketService;
 import com.hp.scheduler.socket.event.EventManager;
@@ -18,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * This is the main app, that will be in charge of managing licenses, clients and so on.
  *
  * @author orozco
  */
@@ -161,6 +161,12 @@ public class Manager extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * This method is called once the manager click on the Connect button, this initializes everything, the event
+     * manager, and starts the 2 services the log service and the registry manager which is in charge of manage clients.
+     *
+     * @param evt the click event
+     */
     private void BtnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnConnectActionPerformed
         logicalClock = new LogicalClockImpl();
         eventLog = new EventLogImpl(TxtLog, logicalClock);
@@ -171,7 +177,7 @@ public class Manager extends javax.swing.JFrame {
 
         eventLog.logReceiveEvent("Manager", "Manager", logicalClock.getValue(), EventType.INITIALIZE, "Manager Initialization", Integer.parseInt(TxtPort.getText()), "localhost");
 
-        service = new SocketService(thisIP, Integer.parseInt(TxtPort.getText()), eventManager);
+        service = new SocketService(TxtIP.getText(), Integer.parseInt(TxtPort.getText()), eventManager);
         service.start();
 
         registryManager = new RegistryManager(service, logicalClock);

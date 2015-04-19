@@ -5,22 +5,35 @@
  */
 package org.sistdist.exclusionmutua;
 
+import com.hp.scheduler.socket.event.EventType;
+
 /**
  *
  * @author orozco
  */
 public class QueueElement {
-    Integer clockValue=null;
-    String processId=null;
-    Integer processPort=null;
 
-    public QueueElement(Integer clockValue, String processId, Integer processPort) {
-        this.clockValue=clockValue;
-        this.processId= processId;
-        this.processPort=processPort;
+    private final int clockValue;
+    private final String processId;
+    private final int processPort;
+
+    //this fields will be only present for the local process in its local queue
+    private EventType type;
+    private String data;
+
+    public QueueElement(int processPort, String processId, int clockValue, EventType type, String data) {
+        this(processPort, processId, clockValue);
+        this.type = type;
+        this.data = data;
     }
 
-    public Integer getClockValue() {
+    public QueueElement(int processPort, String processId, int clockValue) {
+        this.clockValue = clockValue;
+        this.processId = processId;
+        this.processPort = processPort;
+    }
+
+    public int getClockValue() {
         return clockValue;
     }
 
@@ -28,12 +41,16 @@ public class QueueElement {
         return processId;
     }
 
-    public Integer getProcessPort() {
+    public int getProcessPort() {
         return processPort;
     }
-    
-    
-    
-    
-    
+
+    public EventType getType() {
+        return type;
+    }
+
+    public String getData() {
+        return data;
+    }
+
 }

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.hp.scheduler;
 
 import com.hp.scheduler.process.EventLogImpl;
@@ -16,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * This class acts as client which will request for license usage.
  *
  * @author orozco
  */
@@ -165,6 +161,10 @@ public class Client extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Once the Connect button is pressed, it initializes the client, this means create the event manager and a service
+     * which will be in charge of doing log of incoming and outgoing events.
+     */
     private void BtnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnConnectActionPerformed
         lc = new LogicalClockImpl();
         eventLog = new EventLogImpl(Txtlog, lc);
@@ -173,7 +173,7 @@ public class Client extends javax.swing.JFrame {
         lc.tick();
         eventLog.logReceiveEvent("Client2", "Client2", lc.getValue(), EventType.INITIALIZE, "Client Initialization", Integer.parseInt(TxtPortListener.getText()), TxtIP.getText());
 
-        service = new SocketService("localhost", Integer.parseInt(TxtPortListener.getText()), eventManager);
+        service = new SocketService(TxtIP.getText(), Integer.parseInt(TxtPortListener.getText()), eventManager);
         service.start();
         lc.tick();
         service.sendEvent("Client2", lc.getValue(), "Manager", TxtIP.getText(), Integer.parseInt(TxtPort.getText()), EventType.CONNECT, "Requesting connection");

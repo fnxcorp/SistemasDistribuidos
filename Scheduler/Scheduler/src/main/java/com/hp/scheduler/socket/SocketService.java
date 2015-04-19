@@ -1,7 +1,5 @@
 package com.hp.scheduler.socket;
 
-import com.hp.scheduler.process.EventLog;
-import com.hp.scheduler.process.EventLogImpl;
 import com.hp.scheduler.socket.event.EventManager;
 import com.hp.scheduler.socket.event.EventType;
 import java.io.IOException;
@@ -13,6 +11,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * This class creates 2 sockets: 1 to listen for incoming messages, and one to send messages between processes.
  *
  * @author Omar
  */
@@ -24,23 +23,47 @@ public class SocketService extends Thread {
     Listener listener = null;
     EventManager evtManager;
 
+    /**
+     * Initializes the socket service by using a host name and port, also includes an event manager in order to dispatch
+     * messages.
+     *
+     * @param hostname the host name where the socket will reside
+     * @param port the port where the process will be listening
+     * @param evtManager the event manager
+     */
     public SocketService(String hostname, int port, EventManager evtManager) {
         id = getName();
         this.hostname = hostname;
         this.port = port;
         listener = new Listener(port, this);
-       
         this.evtManager = evtManager;
     }
 
+    /**
+     * Method used to send create a message, that later will be send to a different process.
+     *
+     * @param srcProcessID the id of the process that sends the message.
+     * @param processLc the logical clock value of the process that sends the message.
+     * @param destProcess the id of the destination process
+     * @param destHostname is the host name of the remote process
+     * @param destPort the port of the remote process
+     * @param type the type of event that was generated
+     * @param meta extra data in the message
+     */
     public void sendEvent(String srcProcessID, int processLc, String destProcess,
             String destHostname, int destPort, EventType type, String meta) {
-        String message = String.format("%s|%s|%s|%s|%s|%s|%s", srcProcessID, processLc, destProcess, type, meta, this.port,this.hostname);
+        String message = String.format("%s|%s|%s|%s|%s|%s|%s", srcProcessID, processLc, destProcess, type, meta, this.port, this.hostname);
         send(destHostname, destPort, message);
         evtManager.sendEvent(message);
 //        System.out.println("SEND>" + id);
     }
 
+    /**
+     * Sends the actual message to another process, the remote process is found using the hostname and port parameters.
+     *
+     * @param hostanme the host name of the remote process
+     * @param port the port of the remote process
+     */
     private void send(String hostname, int toPort, String msg) {
         DatagramPacket sPacket;
         try {
@@ -59,6 +82,16 @@ public class SocketService extends Thread {
         }
     }
 
+    /**
+     * When receiving an event, this is redirected to the event manager.
+     *
+     * @param local the id of the local process (i guess)
+     * @param from the id of the remote process
+     * @param fromLc the value of the logical clock of the remote process
+     * @param meta extra data on the message
+     * @param fromPort the port from the remote process
+     * @param fromHostName the host name of the remote process
+     */
     public void receiveEvent(String local, String from, int fromLc, EventType type, String meta, String fromPort, String fromHostName) {
         String message = String.format("%s|%s|%s|%s|%s|%s|%s", from, fromLc, local, type, meta, fromPort, fromHostName);
         //TODO add event receive processing
@@ -66,14 +99,24 @@ public class SocketService extends Thread {
         System.out.println("RECEIVE>" + id);
     }
 
+    /**
+     * Starts the listener thread.
+     */
     @Override
     public void run() {
         listener.start();
         //give some time to allow the listener to start on all processes :)
-        
-       
+//        try {
+//            Thread.sleep(5000);
+//        } catch (InterruptedException ex) {
+//            ex.printStackTrace(System.err);
+//        }
+//        listener.close();
     }
 
+    /**
+     * This class is active listening for incoming messages, but using a thread so is non-blocking.
+     */
     private class Listener extends Thread {
 
         int port;
@@ -102,7 +145,8 @@ public class SocketService extends Thread {
 
         @Override
         /**
-         * Handles the reception of messages for a process.
+         * Handles the reception of messages for a process, when it receives a messages it fires the receive event
+         * method in the parent class.
          */
         public void run() {
             DatagramPacket datapacket, returnpacket;
@@ -114,7 +158,7 @@ public class SocketService extends Thread {
                         datapacket = new DatagramPacket(buf, buf.length);
                         datasocket.receive(datapacket);
                         returnpacket = new DatagramPacket(datapacket.getData(), datapacket.getLength(), datapacket.getAddress(), datapacket.getPort());
-                        String event = (new String(returnpacket.getData(),0,returnpacket.getLength(), "UTF-8"));
+                        String event = (new String(returnpacket.getData(), 0, returnpacket.getLength(), "UTF-8"));
                         String[] parts = event.split("\\|");
                         String from = parts[0];
                         int lcFrom = Integer.parseInt(parts[1]);
@@ -126,11 +170,10 @@ public class SocketService extends Thread {
                             type = EventType.UNKNOWN;
                         }
                         String meta = parts[4];
-                        String fromPort=parts[5];
-                        String fromHost=parts[6];
-                        ssRef.receiveEvent(local, from, lcFrom, type, meta,fromPort, fromHost);
+                        String fromPort = parts[5];
+                        String fromHost = parts[6];
+                        ssRef.receiveEvent(local, from, lcFrom, type, meta, fromPort, fromHost);
                     } catch (IOException e) {
-                        e.printStackTrace(System.err);
                         if (keepGoing.get()) {
                             e.printStackTrace(System.err);
                         }
